@@ -1,0 +1,692 @@
+---
+subtitle: "TMA4268 Statistical Learning V2019"
+title: "Compulsory exercise 1: Group 28"
+author: "Solfrid Hagen Johansen"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document
+  #pdf_document
+---
+
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3)
+```
+
+```{r,eval=TRUE,echo=FALSE}
+#install.packages("knitr") #probably already installed
+#install.packages("rmarkdown") #probably already installed
+#install.packages("ggplot2") #plotting with ggplot
+#install.packages("ggfortify")  
+#install.packages("MASS")  
+#install.packages("dplyr")  
+library(knitr)
+library(rmarkdown)
+library(ggplot2)
+library(ggfortify)
+library(MASS)
+library(dplyr)
+```
+
+
+# Problem 1
+
+## a)
+
+The definition of the expected MSE at $x_0$ is
+
+$$
+\mathrm{E}\left[y_{0}-\hat{f}\left(x_{0}\right)\right]^{2}
+$$
+where $y_0$ is the unseen test observation and $\hat{f}(x_0)$ is the predicted response value. 
+
+
+## b)
+
+Using that the variance is defined as
+
+$$
+\operatorname{Var}[X]=\mathrm{E}\left[X^{2}\right]-(\mathrm{E}[X])^{2}
+$$
+
+and solving for $E[X^2]$, gives 
+$$
+  \mathrm{E}\left[X^{2}\right]=\operatorname{Var}[X]+(\mathrm{E}[X])^{2}.
+$$
+The expectation value of $E[f(x_0)] = f(x_0)$, such that $y_0(x_0) = f(x_0) + \epsilon_0$. From now on I'm omitting writing $f(x_0)$ for just $f$ to save space. I'm also writing $y = y_0$. 
+
+Using that $\epsilon_0$ has a mean of zero, the expected value is $E[\epsilon_i] = 0$. This gives $E[y] = E[f] = f$.
+
+This will be used in the derivation below. 
+
+
+$$
+\mathrm{E}\left[(y-\hat{f})^{2}\right]=\mathrm{E}\left[(f+\varepsilon-\hat{f})^{2}\right]
+$$
+
+By adding and subtracting $E[\hat f]$, we get
+
+$$
+\mathrm{E}\left[(f+\varepsilon-\hat{f})^{2}\right]=\mathrm{E}\left[(f+\varepsilon-\hat{f}+\mathrm{E}[\hat{f}]-\mathrm{E}[\hat{f}])^{2}\right] = \mathrm{E}[((f-E[\hat f]) + (\mathrm{E}[\hat f] - \hat f ) + \varepsilon) \cdot ((f-E[\hat f]) + (\mathrm{E}[\hat f] - \hat f ) + \varepsilon))]
+$$
+Then, we write out the terms to get 
+
+$$
+\mathrm{E}\left[(f-\mathrm{E}[\hat{f}])^{2}\right]+\mathrm{E}\left[\varepsilon^{2}\right]+\mathrm{E}\left[(\mathrm{E}[\hat{f}]-\hat{f})^{2}\right]+2 \mathrm{E}[(f-\mathrm{E}[\hat{f}]) \varepsilon]+2 \mathrm{E}[\varepsilon(\mathrm{E}[\hat{f}]-\hat{f})]+2 \mathrm{E}[(\mathrm{E}[\hat{f}]-\hat{f})(f-\mathrm{E}[\hat{f}])].
+$$
+
+By writing out the terms and taking the expectation value of each of the terms, and then collecting back together, (and noting that $E[E[X]] = E[X]$), we get
+
+$$
+(f-\mathrm{E}[\hat{f}])^{2}+\mathrm{E}\left[\varepsilon^{2}\right]+\mathrm{E}\left[(\mathrm{E}[\hat{f}]-\hat{f})^{2}\right]+2(f-\mathrm{E}[\hat{f}]) \mathrm{E}[\varepsilon]+2 \mathrm{E}[\varepsilon] \mathrm{E}[\mathrm{E}[\hat{f}]-\hat{f}]+2 \mathrm{E}[\mathrm{E}[\hat{f}]-\hat{f}](f-\mathrm{E}[\hat{f}]),
+$$
+
+where I also used that $f$ and $\varepsilon$ are independent, so that $E[XY] = E[X] \cdot E[Y]$. 
+
+Next, using that $E[\varepsilon] = 0$, as explained above, we get that the fourth and fifth term cancel.
+
+$$ 
+(f-\mathrm{E}[\hat{f}])^{2}+\mathrm{E}\left[\varepsilon^{2}\right]+\mathrm{E}\left[(\mathrm{E}[\hat{f}]-\hat{f})^{2}\right]+2 \mathrm{E}[\mathrm{E}[\hat{f}]-\hat{f}](f-\mathrm{E}[\hat{f}]). 
+$$
+Also, using that $E[E[\hat f]] = E[\hat f]$, we get $E[E[\hat f] - \hat f] = E[E[\hat f]] - E[\hat f] = 0$, so we are left with
+
+$$ 
+\mathrm{E}\left[(y-\hat{f})^{2}\right] = (f-\mathrm{E}[\hat{f}])^{2}+\mathrm{E}\left[\varepsilon^{2}\right]+\mathrm{E}\left[(\mathrm{E}[\hat{f}]-\hat{f})^{2}\right]
+$$
+
+
+Now note that $E[\varepsilon^2] = \text{Var(}\varepsilon^2)$ by the def. of the variance and $E[\varepsilon] = 0$. By the same definition we get that 
+
+$$
+\mathrm{E}\left[(\mathrm{E}[\hat{f}]-\hat{f})^{2}\right] =\text{Var(}E[\hat f] - \hat f) - E[E[\hat f] - \hat f] = \text{Var(}E[\hat f] - \hat f) = \text{Var(}\hat f).
+$$
+
+Where I used that the difference between two uncorrelated values are given by $\text{Var(}x -y) = \text{Var(}x) + \text{Var(}y)$.
+
+Using that the bias is the difference between the real $f$, and the expected value of our predicted $f$, $\hat f$, we get that
+
+
+$$
+(f-\mathrm{E}[\hat{f}])^{2} = \text{Bias[}\hat f]^2
+$$
+
+To obtain the final expression, we use that $\text{Var(}\varepsilon) = \sigma^2$, so that finally
+
+$$
+\mathrm{E}\left[(y-\hat{f})^{2}\right] = (\text{Bias[}\hat f])^2+\sigma^2+ \text{Var(}\hat f),
+$$
+
+which shows the bias-variance tradeoff, as all these terms are positive. 
+
+## c)
+
+The $\operatorname{Var}(\varepsilon)$ term is due to the error, i.e. noise, and cannot be made smaller. Thus it's called the irreducible term. 
+
+The $\operatorname{Var}\left(\hat{f}\left(x_{0}\right)\right)$ term is the variance of the prediction, and is expected to change for different training data. 
+
+The 
+$$
+\left(f\left(x\right)-\mathrm{E}\left[\hat{f}\left(x\right)\right]\right)^{2} =
+\left[\operatorname{Bias}\left(\hat{f}\left(x\right)\right)\right]^{2}
+$$
+term (called the squared bias) is the difference between the true value, $f$ and the mean of the predicted value. 
+
+## d)
+
+List of answers: TRUE, FALSE, FALSE, TRUE
+
+## e)
+
+List of answers: TRUE, FALSE, TRUE, FALSE
+
+## f)
+
+Answer: (ii) 0.17
+
+## g)
+
+Answer: C
+
+# Problem 2
+
+Here is a code chunk:
+
+```{r, eval=TRUE}
+id <- "1nLen1ckdnX4P9n8ShZeU7zbXpLc7qiwt" # google file ID
+d.worm <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+head(d.worm)
+str(d.worm)
+```
+
+## a)
+
+```{r, eval=TRUE, echo=TRUE}
+nrow(d.worm)
+ncol(d.worm)
+
+```
+
+
+There are 143 rows (number of observations) and 5 columns (number of predictors).
+
+Gattung, and FANGDATUM are qualitative. Nummer, GEWICHT and MAGENUMF are quantitative. 
+
+## b) 
+
+```{r, eval=TRUE, echo=TRUE}
+
+# Plot of transformed data
+ggplot(d.worm,aes(x=log(GEWICHT) ,y=log(MAGENUMF) ,colour=variable)) + geom_point(aes(colour=Gattung, group=Gattung)) + theme_bw()
+```
+
+The relationship does not look linear. After some trying, it seems that transforming to $\log(\text{GEWICHT})$ and $\log(\text{MAGENUMF})$ gives a linear relationship, as shown in the figure above. 
+
+## c)
+```{r, eval=TRUE, echo=TRUE}
+# predicted weight 
+r.worm = lm(log(MAGENUMF) ~ I(log(GEWICHT)) + Gattung, data=d.worm)
+
+# To get the regression coefficients 
+summary(r.worm)
+
+anova(r.worm)
+
+# Plot of regression model
+ggplot(d.worm,aes(x=I(log(GEWICHT)) ,y=log(MAGENUMF))) + geom_point(size=1, aes(colour=Gattung, group=Gattung)) + geom_smooth(method='lm',se=F) + theme_bw()
+
+
+```
+
+From the summary table, we find the coefficients. 
+
+For Gattung = L
+
+$\log(\hat MAGENUMF) = 1.30697 +  0.25902\cdot \log(\text{GEWICHT})$
+
+For Gattung = N
+
+$\log(\hat MAGENUMF) = 1.30697-0.09196+  0.25902\cdot \log(\text{GEWICHT})$
+
+For Gattung = Oc
+
+$\log(\hat MAGENUMF) = 1.30697 -0.13389+  0.25902\cdot \log(\text{GEWICHT})$
+
+As the F-test (anova table) gives a very small p-number for Gattung (p=0.0009658), i.e. there is a very low probability of getting these results if it's not a relevant predictor, the Gattung predictor is relevant. 
+
+
+## d)
+
+```{r, eval=TRUE, echo=TRUE}
+
+# Compare the model with no interaction, with the one WITH interaction and perform F-test using anova table
+r_interaction.worm = lm(log(MAGENUMF) ~ log(GEWICHT)*Gattung, data=d.worm)
+summary(r_interaction.worm)
+anova(r.worm, r_interaction.worm)
+
+ggplot(d.worm,aes(x=I(log(GEWICHT)) ,y=log(MAGENUMF))) + geom_point(size=1, aes(colour=Gattung, group=Gattung)) + geom_abline(color="red", slope=0.24987, intercept=1.31395) +  geom_abline(color="green",slope=0.24987-0.06501, intercept=1.31395-0.07968) + geom_abline(color="blue",slope=0.24987+0.08454, intercept=1.31395-0.10454)+ theme_bw()
+
+```
+
+From the F-test in the anova table (where the interaction term has been included), we can see that the p-value (p=0.001292) is statistically significant, so that interactions are relevant. 
+
+
+
+
+## e)
+```{r, eval=TRUE, echo=TRUE}
+r_no_trans.worm = lm(MAGENUMF ~ GEWICHT + Gattung, data=d.worm)
+
+autoplot(r.worm)
+```
+
+
+The assumptions are that the residuals follows a $N(0, \sigma^2)$ distribution (normal, with zero mean and variance of $\sigma^2$).
+
+From the top left plot (Tukey-Anscombe diagram), there does not seem to be any trend in the residuals as a function on the fitted values. There seems to be approximately the same amount of values above and below, so that the expected value of $E[\varepsilon] = 0$. It also seems that the variances are approximately equal.
+
+For the top right plot (QQ-diagram), which checks the assumtion that $\epsilon_i$ is normally distributed, it should be approximately a straight line. Even though the figure does not look like a completely straight line, I know from other situations that the plots may look like this even though the assumption is fulfulled. So it seems that this assumption is fulfilled. 
+
+The bottom left plot (Scale-Location), also checks if the variances of all error terms are equal. From this plot it does seem to be the case (which is inline with TA-diagram).
+
+```{r, eval=TRUE, echo=TRUE}
+
+autoplot(r_no_trans.worm)
+```
+
+When comparing with the untransformed variable, we clearly see from the T-A  diagram that there is non-linearity. This makes sense, as we did transform to get the "good" residuals from the transformed plot.
+
+
+## f)
+
+From residual we can see if there is any  non-linearity present (from residual vs. fitted values), and transform our variables. If we don't do this, then almost all conclusions we draw from out model are questionable. If this is violated, then the most obvious way to fix this is to transform our predictors, $X$. 
+
+If we see that there is correlation of error terms, we could be underestimating the true standard errors. Thus, our prediction and confidence intervals will be to narrow, compared to our true intervals. In addition, our p-values can be lower than they should be, so that we may conclude that a parameter is statistically significant when it is in fact not. This is clearly very important to get correct predictions. 
+
+We also assume that the variance of each error term is the same. This is an assumption the standard errors, confidence intervals and hypothesis tests rely on, and we may get incorrect conclusions if we dont fulfill this assumption. If this assumption is violated, we could transform the response $Y$ to a non-linear function. 
+
+
+## g)
+
+Answer: (iv)
+
+# Problem 3
+
+## a)
+
+Using $\eta = \beta_{0}+\beta_{1} x_{i 1}+\beta_{2} x_{i 2}+\beta_{3} x_{i 3}+\beta_{4} x_{i 4}$ to simplify notation. 
+
+$$
+\frac{p_i}{1-p_i} = \frac{1}{1+e^{-\eta}} \cdot \frac{1}{1- \frac{1}{1+e^{-\eta}}} =\frac{1}{1+e^{-\eta}}\cdot \frac{1+e^{-\eta}}{1+e^{-\eta} -1} = \frac{1+e^{-\eta}}{(1+e^{-\eta})\cdot e^{-\eta}} = e^{\eta}
+$$
+
+Taking the logarithm of this gives
+
+$$
+\log\Big(\frac{p_i}{1-p_i}\Big) =  \eta =\beta_{0}+\beta_{1} x_{i 1}+\beta_{2} x_{i 2}+\beta_{3} x_{i 3}+\beta_{4} x_{i 4},
+$$
+
+which is a linear function of the covariates.
+
+## b)
+As we define $p_i$ as the probability that $Y_i = 1$ given $X=x$, i.e. $$
+p_i = \mathrm{P}\left(Y_{i}=1 | X=x\right)$$
+
+We have that the odds are given by 
+$$
+\begin{aligned}
+\operatorname{odds}\left(Y_{i}=1 | X=x\right) = 
+\frac{p_{i}}{1-p_{i}} &=\frac{\mathrm{P}\left(Y_{i}=1 | X=x\right)}{\mathrm{P}\left(Y_{i}=0 | X=x\right)} \\
+&=\exp \left(\beta_{0}\right) \cdot \exp \left(\beta_{1} x_{i 1}\right)  \cdot \exp \left(\beta_{p} x_{i 2}\right)\cdot \exp \left(\beta_{p} x_{i 3}\right)\cdot \exp \left(\beta_{p} x_{i 4}\right)
+\end{aligned}
+$$
+
+Then, to find the effect of regression coefficient $\beta_1$, we increase $x_{i 1}$ to $x_{i 1}+1$, and then divide the odds of this with the odds found above, which gives
+
+$$
+\frac{\operatorname{odds}\left(Y_{i}=1 | X_{1}=x_{i 1}+1\right)}{\operatorname{odds}\left(Y_{i}=1 | X_{1}=x_{i 1}\right)}= \frac{
+\exp \left(\beta_{0}\right) \cdot \exp \left(\beta_{1} (x_{i 1}+1)\right)  \cdot \exp \left(\beta_{p} x_{i 2}\right)\cdot \exp \left(\beta_{p}x_{i 3}\right)\cdot \exp \left(\beta_{p} x_{i 4}\right)
+}{\exp \left(\beta_{0}\right) \cdot \exp \left(\beta_{1} x_{i 1}\right)  \cdot \exp \left(\beta_{p} x_{i 2}\right)\cdot \exp \left(\beta_{p} x_{i 3}\right)\cdot \exp \left(\beta_{p} x_{i 4}\right)}= \exp \left(\beta_{1}\right),
+$$
+as all the exponential terms, except $\exp(\beta_1)$ cancel.
+
+Thus, the odds ratio is increased by $\exp(\beta_1) = \exp(0.36338) = 1.438182$.
+
+## c)
+
+
+```{r, eval=TRUE, echo=TRUE}
+
+
+id <- "1GNbIhjdhuwPOBr0Qz82JMkdjUVBuSoZd"
+tennis <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
+id), header = T)
+
+# make variables for difference
+tennis$ACEdiff = tennis$ACE.1-tennis$ACE.2
+tennis$UFEdiff = tennis$UFE.1-tennis$UFE.2
+
+#divide into test and train set
+n = dim(tennis)[1]
+n2 = n/2
+
+set.seed(1234) # to reproduce the same test and train sets each time you run the code
+train = sample(c(1:n), replace = F)[1:n2]
+tennisTest = tennis[-train,]
+tennisTrain = tennis[train,]
+
+# fitting logistic regression model, using the training set
+tennis.fit = glm(Result~ACEdiff + UFEdiff, data=tennisTrain, family=binomial)
+summary(tennis.fit)$coef
+```
+
+Using
+$$
+\log\Big(\frac{p}{1-p}\Big)  =\beta_{0}+\beta_{1} x_{ 1}+\beta_{2} x_{2}
+$$
+
+
+At the class boundary, the probability is $p=0.5$, i.e. 
+$$
+\log\Big(\frac{p}{1-p}\Big) = \log\Big(\frac{0.5}{1-0.5}\Big) = 0
+$$
+
+so that the class boundry is given by 
+
+$$
+\beta_{0}+\beta_{1} x_{1}+\beta_{2} x_{2} = 0
+$$
+which gives 
+
+$$
+x_{2} = -\frac{\beta_{1}}{\beta_2}x_1 - \frac{\beta_0}{\beta_2}
+$$
+With $\beta_0 = 0.28271748$, $\beta_1 = \text{ACEdiff} = 0.22354891$ and $\beta_2 = \text{UFEdiff} = -0.08606799$
+we get that the class boundary is
+
+$x_2 = 2.5973 \cdot x_1 + 3.2848$.
+
+```{r, eval=TRUE, echo=TRUE}
+# Below; Classified as loss
+
+a = 3.2848
+b = 2.5973
+
+# Plot of training data, with the class boundary
+
+ggplot(tennisTrain,aes(x=ACEdiff ,y=UFEdiff, color=as.factor(Result))) + scale_fill_discrete(name="Result", labels=c("0, Player 2 wins", "1, Player 1 wins")) + geom_point(size=1) + geom_abline(slope=b, intercept=a) + scale_color_manual(values = c("#00AFBB", "#FC4E07"))+theme_bw()  +scale_colour_discrete(name  ="Win", breaks=c("0", "1"), labels=c("Player 2", "Player 1"))
+
+```
+
+```{r, eval=TRUE, echo=TRUE}
+
+# predicts the probability that P(Y=1|x), so the probability that player 1 wins
+tennis_probs = predict(tennis.fit, type="response", newdata=tennisTest)
+
+# If the predicted prob is above 0.5, player 1 wins, else player 2 wins.
+tennis_pred = ifelse(tennis_probs > 0.5, 1,0)
+
+# As 0 corresponds to player 2 winning, must flip this to get correct table (values equal to 0 swaps to 1, and 1 gets swapped to 0)
+tb = table(tennisTest$Result, tennis_pred)
+
+# Displaying the confusion table
+tb
+```
+
+
+```{r, eval=TRUE, echo=TRUE}
+
+# Sensitivity = proportion of correctly predicted true
+
+sens = 24/(6+24)
+sens
+
+# Specificity = proportion of correctly predicted negatives
+
+spec = 22/(22 + 7)
+spec
+
+```
+
+The sensitivity is thus 0.8, and the specificity is 0.759.
+0
+
+## d)
+
+$\pi_k$ is the prior (overall) probability of a random variable coming from class $k$. In our case, $\text {Result} \in\{\text { 0, 1}\}\)$, so $\pi_\text{1}$ is the probability that a random observation comes from the class 1 (player 1 wins), i.e. $\pi_k = \text{P}(Y = k)$ (the same for 0).
+
+$\boldsymbol{\mu}_{k}$ is a matrix of dimension (px1) which stores the means of the predictors for class $k$. In this case we have the two matrices $\boldsymbol{\mu}_{0}$ and $\boldsymbol{\mu}_{1}$ which contains the mean value of all predictors from class 0 and class 1 respectively(mean difference in aces and mean difference in unforced errors). 
+
+
+$\mathbf{\Sigma} = \mathbf{\Sigma}_k$ for all $k$ (assumption), is the covariance matrix for all classes in the problem. I.e. both observations of 0 and 1 has the same covariance matrix by assumption.
+
+$f_{k}(x) = \text{P}(X = x | Y=k)$ (for a discrete variable) is the density function of X for an observation from the $k$th class. Here we thus have two of these, $f_{0}(x) = \text{P}(X = x | Y=0)$ and $f_{1}(x) = \text{P}(X = x | Y=1)$
+
+## e)
+
+From task d) (and class) we have that 
+
+$$
+P(Y=k | \mathbf{X}=\boldsymbol{x})=\frac{\pi_{k} f_{k}(\boldsymbol{x})}{\sum_{l=1}^{K} \pi_{l} f_{l}(\boldsymbol{x})}
+$$
+
+Inserting for $f_k(\boldsymbol{x})$ gives 
+
+$$
+P(Y=k | \mathbf{X}=\boldsymbol{x})=\frac{
+\frac{\pi_{k}}{(2 \pi)^{p / 2}|\mathbf{\Sigma}|^{1 / 2}} e^{-\frac{1}{2}\left(\boldsymbol{x}-\boldsymbol{\mu}_{k}\right)^{T} \mathbf{\Sigma}^{-1}\left(\boldsymbol{x}-\boldsymbol{\mu}_{k}\right)}}{\sum_{l=1}^{K} \pi_{l} f_{l}(\boldsymbol{x})}
+$$
+
+In a two class problem, we have $K = 2$, so equating gives
+
+$$
+P(Y=0 | \mathbf{X}=\boldsymbol{x})=P(Y=1 | \mathbf{X}=\boldsymbol{x})
+$$
+
+$$
+\frac{
+\frac{\pi_0}{(2 \pi)^{p / 2}|\mathbf{\Sigma}|^{1 / 2}} e^{-\frac{1}{2}\left(\boldsymbol{x}-\boldsymbol{\mu}_{0}\right)^{T} \mathbf{\Sigma}^{-1}\left(\boldsymbol{x}-\boldsymbol{\mu}_{0}\right)}}{\sum_{l=1}^{K} \pi_{l} f_{l}(\boldsymbol{x})} =\frac{
+\frac{\pi_{1}}{(2 \pi)^{p / 2}|\mathbf{\Sigma}|^{1 / 2}} e^{-\frac{1}{2}\left(\boldsymbol{x}-\boldsymbol{\mu}_{1}\right)^{T} \mathbf{\Sigma}^{-1}\left(\boldsymbol{x}-\boldsymbol{\mu}_{1}\right)}}{\sum_{l=1}^{K} \pi_{l} f_{l}(\boldsymbol{x})} 
+$$
+
+The sum in the denominator cancel, as well as the term in the denominator in the fraction. Also taking the logarithm on both sides, gives
+
+$$
+\log\Big(\pi_{0} e^{-\frac{1}{2}\left(\boldsymbol{x}-\boldsymbol{\mu}_{0}\right)^{T} \mathbf{\Sigma}^{-1}\left(\boldsymbol{x}-\boldsymbol{\mu}_{0}\right)}\Big)\\ = \log(\pi_0) -\frac{1}{2}\left(\boldsymbol{x}-\boldsymbol{\mu}_{0}\right)^{T} \boldsymbol{\Sigma}^{-1}\left(\boldsymbol{x}-\boldsymbol{\mu}_{0}\right)\\ =
+\log(\pi_0) -\frac{1}{2}\boldsymbol{x}^{T} \boldsymbol{\Sigma}^{-1}\boldsymbol{x} + 
+\frac{1}{2}\boldsymbol{\mu_{0}}^{T} \boldsymbol{\Sigma}^{-1}\boldsymbol{x} +
+\frac{1}{2}\boldsymbol{x^T\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{0}}} -
+\frac{1}{2}\boldsymbol{\mu_{0}^T\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{0}}}
+$$
+
+Using that $\boldsymbol{\Sigma}^{-1}$ is Hermitian (symmetric and only has real values), gives that we can use the property that
+
+$$
+\boldsymbol{x^T\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{0}}} = \boldsymbol{\mu_{0}}^{T} \boldsymbol{\Sigma}^{-1}\boldsymbol{x}
+$$
+
+which gives (after equating with $k=1$ expression)
+
+$$
+\log(\pi_0)-\frac{1}{2}\boldsymbol{x}^{T} \boldsymbol{\Sigma}^{-1}\boldsymbol{x} + 
+\boldsymbol{x^T\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{0}}} -
+\frac{1}{2}\boldsymbol{\mu_{0}^T\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{0}}} = 
+\log(\pi_0) -\frac{1}{2}\boldsymbol{x}^{T} \boldsymbol{\Sigma}^{-1}\boldsymbol{x} + 
+\boldsymbol{x^T\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{1}}} -
+\frac{1}{2}\boldsymbol{\mu_{1}^T}\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{1}}
+$$
+
+$$
+\log(\pi_0)+ 
+\boldsymbol{x^T\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{0}}} -
+\frac{1}{2}\boldsymbol{\mu_{0}^T\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{0}}} = 
+\log(\pi_0)+ 
+\boldsymbol{x^T\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{1}}} -
+\frac{1}{2}\boldsymbol{\mu_{1}^T}\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu_{1}}
+$$
+Which, by the definition stated in the problem task, gives
+
+$$
+\delta_0(\boldsymbol x) = \delta_1(\boldsymbol x).
+$$
+
+now finding the class bounary as a function of $x_2$. 
+
+Moving the part containing $x$ to the left, and first computing the right side, i.e.
+
+$$
+\boldsymbol{x}^{T} \boldsymbol{\Sigma}^{-1}\left(\mu_{0}-\mu_{1}\right)=\log \left(\frac{\pi_{1}}{\pi_{0}}\right)+\frac{1}{2} \boldsymbol{\mu}_{1}^{T} \boldsymbol{\Sigma}^{-1} \boldsymbol{\mu}_{1}-\frac{1}{2} \boldsymbol{\mu}_{0}^{T} \boldsymbol{\Sigma}^{-1} \boldsymbol{\mu}_{0}
+$$
+
+We will get a solution on the form 
+
+$$
+a_1x_1 + a_2x_2 = a_3.
+$$
+
+We thus want to fnd an expression for
+
+$$
+x_2 = \frac{a_3}{a_2} - \frac{a_1}{a_2}x_1
+$$
+
+which we find below.
+
+```{r, eval=TRUE, echo=TRUE}
+# Contains the observations where player 1 wins
+tennis_1 = subset(tennisTrain, tennisTrain$Result > 0.5)
+# player 2 wins
+tennis_2 = subset(tennisTrain, tennisTrain$Result <= 0.5)
+# Number of observations
+n_1 = length(tennis_1$Player1)
+n_2 = length(tennis_2$Player2)
+# prior probabilities
+pi_1 = n_1/(n_1 + n_2)
+pi_2 = n_2/(n_1 + n_2)
+# mean matrices
+mu_1 = matrix(c(mean(tennis_1$ACEdiff), mean(tennis_1$UFEdiff)), nrow=2)
+mu_2 = matrix(c(mean(tennis_2$ACEdiff), mean(tennis_2$UFEdiff)), nrow=2)
+# covariance matrices
+cov_1 = cov(cbind(tennis_1$ACEdiff, tennis_1$UFEdiff))
+cov_2 = cov(cbind(tennis_2$ACEdiff, tennis_2$UFEdiff))
+# Finding pooled convariance
+sigma =  1/(n_1 + n_2-2)*((n_1-1)*cov_1 + (n_2-1)*cov_2)
+# rhs of equation
+a_3 = log(pi_2/pi_1) +0.5*t(mu_2)%*%solve(sigma)%*%mu_2 - 0.5*t(mu_1)%*%solve(sigma)%*%mu_1 
+# finding the x-vector
+x = solve(sigma)%*%(mu_2 - mu_1)
+a_1 = x[1]
+a_2 = x[2]
+s = - a_1/a_2
+i = a_3/a_2
+s
+i
+# Stores if the variable is in the training data or not
+tennis$train = 1
+tennis[-train, ]$train = 0
+
+df = data.frame(tennis, win=as.factor(tennis$Result), train = as.factor(tennis$train))
+ggplot(df, aes(x=ACEdiff ,y=UFEdiff, color=win, shape=as.factor(train))) + geom_abline(slope=s, intercept=i) + geom_point(size=1) + theme_bw() +scale_colour_discrete(name  ="Win", breaks=c("0", "1"), labels=c("Player 2", "Player 1")) + scale_shape_discrete(name  ="Data",breaks=c("0", "1"), labels=c("Test", "Train"))
+```
+
+The formula is
+
+$$
+x_2 = 1.707942 + 2.504046 \cdot x_1.
+$$
+
+
+
+## f)
+
+```{r, eval=TRUE, echo=TRUE}
+
+# Predict using LDA
+lda.fit = lda(Result ~ ACEdiff + UFEdiff, data=tennisTrain)
+# Finding predicted class from test set
+predictClass = predict(lda.fit, tennisTest)$class
+# confusion matrx
+confusion = table(predictClass, tennisTest$Result)
+confusion
+# Sensitivity
+sensitivity = 25/(25 + 9)
+sensitivity
+# Specificity 
+specificity = 20/(20 + 5)
+specificity
+```
+
+The sensitivity is 0.7352941, and the specificity is 0.8.
+## g)
+
+LDA assumes that the covariance matrices for all classes are equal, while QDL makes no such assumption. This leads to quadratic decision surfaces. 
+
+
+```{r, eval=TRUE, echo=TRUE}
+
+# Predict using QDA
+qda.fit = qda(Result ~ ACEdiff + UFEdiff, data=tennisTrain)
+# Finding predicted class from test set
+predictqda = predict(qda.fit, tennisTest)$class
+# confusion matrx
+confusion_qda = table(predictqda, tennisTest$Result)
+confusion_qda
+# Sensitivity
+sensitivity = 24/(24 + 9)
+sensitivity
+# Specificity 
+specificity = 20/(20 + 6)
+specificity
+```
+
+The sensitivity is 0.7272727 and the specificity is 0.7692308.
+
+## h)
+
+As both the sensitivity and specificity is higher for LDA than QDA, I would prefer this, as it estimates the most correctly. The glm haves a higher sensitivity than LDA, but lower specificity than LDA. These differences are rather small, so to determine which model is the best, depends on what the model is used for. In e.g. medical applications, one might prefer the glm as it has a high sensitivity.
+
+
+# Problem 4
+
+## a)
+
+10-fold cross validation means that the regression is performed by randomly splitting the data into k (approximately) equal parts. Then, one of the $k$ parts of the data is removed from the training data, and the model is fitted using the rest of the data. The removed data is then used as the validation set. Then, until it has gone though all the data, data from the next part are removed from the training set while the values that were tested in the previous iteration are put back in. 
+
+This CV procedure is done for all the possible values of K (Nr. of nearest neighbors), and computing the 10-fold CV estimate for each value of K
+
+$$
+CV_{10} = \frac{1}{k}\sum_{i=1}^{10} MSE_i,
+$$
+
+
+where $MSE_i$ is the mean squared error as defined in Problem 1 a). This way, one can assess which value of nearest neighbours should be chosen. 
+
+## b)
+
+List of answers: TRUE, TRUE, FALSE, FALSE
+
+## c)
+
+
+```{r, eval=TRUE, echo=TRUE}
+set.seed(1)
+id <- "1I6dk1fA4ujBjZPo3Xj8pIfnzIa94WKcy"  # google file ID
+d.chd <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", 
+    id))
+
+# Logistic regression
+glm.fits = glm(formula=chd ~ sbp + sex, data= d.chd, family=binomial)
+
+sbp_0 = 140
+
+# Male
+sex_0 = 1
+
+# Creating a data frame to give to predict function
+x_0 = data.frame(sbp = sbp_0, sex = sex_0)
+
+# Probability of chd
+predict(glm.fits, type="response", newdata=x_0)
+```
+
+The probability of chd for a male with a sbp=140 is 38.31131%. 
+
+## d)
+
+```{r, eval=TRUE, echo=TRUE}
+# Nr of bootstrap samples
+set.seed(1)
+#beta_hat[i] = boot.fn(SLID, sample(nrow(SLID), nrow(SLID), replace = T))["age"]
+
+# Returns the estimated probability
+boot.fn = function(data, index) {
+    glm.fits = glm(formula=chd ~ sbp + sex, data, family=binomial, subset=index)
+    return (predict(glm.fits, type="response", newdata=x_0))
+}
+
+probs = c()
+B = 1000
+for (i in 1:B) {
+   probs[i] = boot.fn(d.chd, sample(nrow(d.chd), nrow(d.chd), replace=T))
+}
+
+# Computing the standard error
+est = sum(probs)
+est_2 = 1/B*est
+
+est_2 = sum((probs - est_2)^2)
+
+SD=sqrt((1/(B-1))*sum(est_2))
+SD
+
+# Can also compute with standard error fuction
+# sd(probs)
+
+# 95% confidence interval
+quantile(probs, c(0.025, 0.975))
+
+```
+
+The standard error was found to be 0.04613363.
+The 95% confidence interval is between 0.2956893 and 0.4766414.
